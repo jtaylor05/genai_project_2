@@ -2,7 +2,7 @@
 # AUTHOR   : Jackson Taylor
 # CREATED  : 3-31-2025
 # EDITED   : 3-31-2025
-# CONTAINS : Pre-proccessing methods to clean data and output cleaned methods to output file
+# CONTAINS : Pre-proccessing methods to clean and mask data and output to ./data/clean
 ##
 
 import os
@@ -16,16 +16,19 @@ clean_path = os.path.abspath(os.path.join("data", "clean"))
 
 filenames  = ["ft_test.csv", "ft_train.csv", "ft_valid.csv"]
 
+#removes all new line characters
 def flatten_methods(df : pd.DataFrame, method_col = "cleaned_method"):
     for i in range(len(df)):
         df.loc[i, method_col] = df[method_col][i].replace("\n", "")
     return df
 
+#replaces all tabs with token versions
 def tokenize_tabs(df : pd.DataFrame, method_col = "cleaned_method"):
     for i in range(len(df)):
         df.loc[i, method_col] = df[method_col][i].replace("    ", " " + TAB_TOKEN + " ")
     return df
 
+#splits the string along the subsqeuent tokens, tokens, contained in the string. Throws error if tokens not contained
 def split_on_tokens(string : str, tokens : list):
     start_ind  = 0
     while True:
@@ -45,7 +48,7 @@ def split_on_tokens(string : str, tokens : list):
         else:
             start_ind = string.find(tokens[0], start_ind) + 1
         
-
+#masks all if statements in the dataframe df and replaces them with the mask token "<MASK>"
 def mask_if_stmts(df : pd.DataFrame, method_col = "cleaned_method", if_col = "target_block"):
     for i in range(len(df)):
         if_stmt : list = df[if_col][i].split(" ")
