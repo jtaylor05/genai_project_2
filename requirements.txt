@@ -1,1 +1,3 @@
-pip install pandas
+pandas
+transformers
+datasets
