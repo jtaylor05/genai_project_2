@@ -20,6 +20,7 @@ filenames  = ["ft_test.csv", "ft_train.csv", "ft_valid.csv"]
 def flatten_methods(df : pd.DataFrame, method_col = "cleaned_method"):
     for i in range(len(df)):
         df.loc[i, method_col] = df[method_col][i].replace("\n", "")
+        df.loc[i, method_col] = df[method_col][i].replace("\r", "")
     return df
 
 #replaces all tabs with token versions
@@ -67,5 +68,5 @@ for name in filenames:
     df = flatten_methods(df)
     df = tokenize_tabs(df)
 
-    df.to_csv(output_path, index=False)
+    df.to_csv(output_path, header=False, index=False)
 
