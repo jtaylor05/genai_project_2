@@ -68,5 +68,5 @@ for name in filenames:
     df = flatten_methods(df)
     df = tokenize_tabs(df)
 
-    df.to_csv(output_path, header=False, index=False)
+    df.to_csv(output_path, header=True, index=False)
 
