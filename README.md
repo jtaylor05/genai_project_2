@@ -4,7 +4,7 @@
 ### EDITED   : 4-8-2025
 ##
 
-## GenAI for Software Development (Fine-Tuning Models)
+## GenAI for Software Development Project 2 (Fine-Tuning Models)
 
 * [1 Introduction](#1-introduction)  
 * [2 Getting Started](#2-getting-started)  
@@ -63,22 +63,11 @@ Install the required dependencies:
 (.venv) ~/genai_project_2 $ pip install -r requirements.txt
 
 ### **2.3 Run Fine-Tuning**
-
 ```
 (.venv) ~/genai_project_2 $ cd src
 (.venv) ~/genai_project_2/src $ python model.py
 ```
-
-[insert demo instructions here]
-
-(2) Example run of Fine-Tuning Demo
-(3) Some sample results of training process during fine-tuning
-
-
-
-
 ### 3. Report
-
 The assignment report is available in the file Assignment_Report.pdf.
 
 
