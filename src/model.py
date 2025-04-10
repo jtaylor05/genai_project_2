@@ -6,27 +6,31 @@ from transformers import TrainingArguments, Trainer
 from transformers import EarlyStoppingCallback
 import pandas as pd
 import torch
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+import evaluate
+# import os
 
+# os.environ['PYTORCH_ENABLE_MPS_FALLBACK'] = '1'
 
-if torch.backends.mps.is_available():
-    mps_device = torch.device("mps")
-    x = torch.ones(1, device=mps_device)
-    print(x)
-else:
-    print("MPS device not found")
+# if torch.backends.mps.is_available():
+#     mps_device = torch.device("mps")
+#     x = torch.ones(1, device=mps_device)
+#     print(x)
+# else:
+#     print("MPS device not found")
 
 train_dataset = pd.read_csv('../data/clean/ft_train_small.csv')
 train_dataset = Dataset.from_pandas(train_dataset)
 test_dataset = pd.read_csv('../data/clean/ft_test_small.csv')
 test_dataset = Dataset.from_pandas(test_dataset)
 valid_dataset = pd.read_csv('../data/clean/ft_valid_small.csv')
+valid_dataset = Dataset.from_pandas(valid_dataset)
 # train_dataset = pd.read_csv('../data/clean/ft_train.csv')
 # train_dataset = Dataset.from_pandas(train_dataset)
 # test_dataset = pd.read_csv('../data/clean/ft_test.csv')
 # test_dataset = Dataset.from_pandas(test_dataset)
 # valid_dataset = pd.read_csv('../data/clean/ft_valid.csv')
-valid_dataset = Dataset.from_pandas(valid_dataset)
+# valid_dataset = Dataset.from_pandas(valid_dataset)
 dataset_dict = DatasetDict({
     'train': train_dataset,
     'validation': valid_dataset,
@@ -37,7 +41,7 @@ model_checkpoint = "Salesforce/codet5-small"
 
 model = T5ForConditionalGeneration.from_pretrained(model_checkpoint)
 
-model = model.to(mps_device)
+# model = model.to(mps_device)
 
 tokenizer = RobertaTokenizer.from_pretrained(model_checkpoint)
 tokenizer.add_tokens(["<TAB>", "<MASK>"])
@@ -54,6 +58,8 @@ def preprocess_function(examples):
 
 tokenized_datasets = dataset_dict.map(preprocess_function, batched=True)
 
+sacrebleu = evaluate.load("sacrebleu")
+
 def compute_metrics(pred):
     labels = pred.label_ids
     preds = pred.predictions[0]
@@ -63,9 +69,32 @@ def compute_metrics(pred):
     preds = preds.flatten()
 
     accuracy = accuracy_score(labels, preds)
+    recall = recall_score(labels, preds, average='weighted')
+    f1 = f1_score(labels, preds, average='weighted')
+
+    preds = tokenizer.batch_decode(preds, skip_special_tokens=True)
+    labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
+
+    preds = [p for p in preds if p.strip()!='']
+    labels = [l for l in labels if l.strip()!='']
+    diff = len(labels) - len(preds)
+    for i in range(diff):
+        preds += ['.']
+    pred_length = len(preds)
+    labels_length = len(labels)
+    if pred_length != labels_length:
+        if pred_length > labels_length:
+            preds = preds[:labels_length]
+        elif labels_length > pred_length:
+            labels = labels[:pred_length]
+
+    results = sacrebleu.compute(predictions=preds, references=labels, smooth_method='floor', smooth_value=0.1)
     
     return {
-        'exact_match': accuracy,
+        'accuracy_score': accuracy,
+        'recall_score': recall,
+        'f1_score': f1,
+        'bleu_score': results
     }
 
 training_args = TrainingArguments(

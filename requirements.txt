@@ -2,3 +2,5 @@ pandas
 transformers
 datasets
 scikit-learn
+sacrebleu
+evaluate
