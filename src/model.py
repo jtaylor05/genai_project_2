@@ -8,16 +8,6 @@ import pandas as pd
 import torch
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 import evaluate
-# import os
-
-# os.environ['PYTORCH_ENABLE_MPS_FALLBACK'] = '1'
-
-# if torch.backends.mps.is_available():
-#     mps_device = torch.device("mps")
-#     x = torch.ones(1, device=mps_device)
-#     print(x)
-# else:
-#     print("MPS device not found")
 
 train_dataset = pd.read_csv('../data/clean/ft_train_small.csv')
 train_dataset = Dataset.from_pandas(train_dataset)
@@ -40,8 +30,6 @@ dataset_dict = DatasetDict({
 model_checkpoint = "Salesforce/codet5-small"
 
 model = T5ForConditionalGeneration.from_pretrained(model_checkpoint)
-
-# model = model.to(mps_device)
 
 tokenizer = RobertaTokenizer.from_pretrained(model_checkpoint)
 tokenizer.add_tokens(["<TAB>", "<MASK>"])
@@ -130,11 +118,3 @@ trainer.train()
 results = trainer.evaluate()
 
 print(results)
-
-# metrics = trainer.evaluate(tokenized_datasets["test"])
-# print("Test Evaluation Metrics:", metrics)
-
-# input_code = "def add(a, b):\n    return a + b"
-# inputs = tokenizer(input_code, return_tensors="pt", padding=True, truncation=True)
-# outputs = model.generate(**inputs, max_length=256)
-# print("Generated Java Code:\n", tokenizer.decode(outputs[0], skip_special_tokens=True))
